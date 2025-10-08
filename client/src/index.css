@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto+Mono:wght@400;600&display=swap');
+
+/* === Global Styles === */
+body {
+  background: linear-gradient(140deg, #132743, #0B192F);
+  color: #FFFFFF;
+  font-family: "Montserrat", sans-serif;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* Headings */
+h1, h2 {
+  color: #FF6F3C;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.h1 {
+  @apply font-bold tracking-wide;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Header */
+header {
+  background-color: #0B192F;
+  color: #FF6F3C;
+  padding: 15px;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Panels / Cards */
+.panel {
+  @apply rounded-2xl border border-gray-700 shadow-lg;
+  background: rgba(19, 39, 67, 0.75); /* translucent dark blue glass effect */
+  backdrop-filter: blur(10px);
+}
+
+/* Metric / Dashboard text */
+.metric-title {
+  @apply text-sm uppercase tracking-wider;
+  color: #FFB07F;
+}
+
+.metric-value {
+  @apply text-2xl md:text-3xl font-bold;
+  color: #FFFFFF;
+}
+
+/* Tables */
+.table-head {
+  @apply uppercase text-xs tracking-wider;
+  color: #FFB07F;
+}
+
+table {
+  @apply w-full;
+}
+
+table th,
+table td {
+  @apply px-3 py-2;
+  color: #EAEAEA;
+}
+
+/* Buttons */
+button {
+  background-color: #B87333;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  transition: 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #FF6F3C;
+}
+
+/* Glass-style panels (e.g., login boxes) */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Sections */
+section {
+  scroll-margin-top: 80px; /* avoids nav overlap when jumping to anchors */
+}
+
+/* Links */
+a {
+  color: #FFB07F;
+  text-decoration: none;
+  @apply transition-colors;
+}
+
+a:hover {
+  color: #FF6F3C;
+}
+
+/* Hero / Overlay accent (optional) */
+.hero-bg {
+  background: radial-gradient(circle at top left, rgba(255,111,60,0.12), transparent 70%),
+              radial-gradient(circle at bottom right, rgba(184,115,51,0.1), transparent 70%);
+}
