@@ -1,52 +1,96 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { api } from "../api"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const nav = useNavigate()
-  const [u, setU] = useState("")
-  const [p, setP] = useState("")
-  const [msg, setMsg] = useState("")
-  const [loading, setLoading] = useState(false)
+  const nav = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState("");
+  const [signup, setSignup] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  async function submit(e) {
-    e.preventDefault()
-    setMsg("")
-    setLoading(true)
-    const { ok, data } = await api.login(u, p)
-    setLoading(false)
-    if (ok) nav("/select-car")
-    else setMsg(data?.message || "Authentication failed")
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setMsg("");
+    setLoading(true);
+
+    const endpoint = signup ? "/signup" : "/login";
+
+    try {
+      const res = await fetch(`http://localhost:3000${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (!res.ok) return setMsg(data?.message || "Request failed");
+
+      if (signup) {
+        setMsg("✅ Account created! Awaiting admin approval.");
+        setSignup(false);
+        setUsername("");
+        setPassword("");
+      } else {
+        setMsg("✅ Login successful!");
+        setTimeout(() => nav("/select-car"), 700);
+      }
+    } catch {
+      setMsg("⚠️ Server not reachable");
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-[#1A1A1A] to-gray-900 p-6">
-      <div className="panel max-w-md w-full p-10 relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#00BFFF] opacity-20 rounded-full blur-3xl animate-pulse"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-gray-800 p-6">
+      <div className="panel p-10 rounded-xl bg-black/50 shadow-lg max-w-md w-full">
+        <h1 className="text-center text-3xl font-bold text-[#00BFFF] mb-3">
+          {signup ? "SIGN UP" : "RACE CONTROL"}
+        </h1>
+        <p className="text-center text-gray-400 mb-6">
+          {signup
+            ? "Register to access telemetry (admin approval required)"
+            : "Sign in to access telemetry"}
+        </p>
 
-        <h1 className="h1 text-3xl text-center mb-2">RACE CONTROL</h1>
-        <p className="text-center text-gray-400 mb-6">Sign in to access telemetry</p>
-
-        <form onSubmit={submit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <input
-            value={u}
-            onChange={(e) => setU(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             placeholder="Username"
-            className="w-full p-3 rounded bg-black/30 border border-white/10 focus:border-[#00BFFF] focus:ring-2 focus:ring-[#00BFFF]/40 transition-all"
+            className="w-full p-3 rounded bg-black/30 border border-gray-700 focus:ring-2 focus:ring-[#00BFFF]"
+            required
           />
           <input
-            value={p}
-            onChange={(e) => setP(e.target.value)}
             type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full p-3 rounded bg-black/30 border border-white/10 focus:border-[#00BFFF] focus:ring-2 focus:ring-[#00BFFF]/40 transition-all"
+            className="w-full p-3 rounded bg-black/30 border border-gray-700 focus:ring-2 focus:ring-[#00BFFF]"
+            required
           />
-          <button className="w-full py-3 bg-[#00BFFF] hover:bg-[#00a6e0] text-black font-semibold rounded transition">
-            {loading ? "Authenticating…" : "Enter Pit Lane"}
+          <button
+            className="w-full py-3 bg-[#00BFFF] hover:bg-[#00AEEF] text-black font-semibold rounded transition"
+          >
+            {loading ? "Please wait..." : signup ? "Sign Up" : "Login"}
           </button>
-          {msg && <div className="text-red-400 text-sm text-center">{msg}</div>}
         </form>
+
+        {msg && <p className="text-center text-sm text-gray-300 mt-4">{msg}</p>}
+
+        <div className="mt-5 text-center text-sm text-gray-400">
+          {signup ? "Already have an account?" : "Don't have an account?"}{" "}
+          <button
+            className="text-[#00BFFF] hover:underline"
+            onClick={() => setSignup(!signup)}
+          >
+            {signup ? "Login" : "Sign up"}
+          </button>
+        </div>
       </div>
     </div>
-  )
+  );
 }

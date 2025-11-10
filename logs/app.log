@@ -1,0 +1,115 @@
+{
+  message: 'Server is running on http://localhost:3000',
+  level: 'info',
+  timestamp: '2025-11-09T15:13:09.623Z'
+}
+{
+  message: 'Successfully connected to MongoDB.',
+  level: 'info',
+  timestamp: '2025-11-09T15:13:09.660Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:14:10 +0000] "GET /api/welcome HTTP/1.1" 302 23 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:14:10.369Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:14:10 +0000] "GET /api/welcome HTTP/1.1" 302 23 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:14:10.379Z'
+}
+{
+  message: 'Server running on http://localhost:3000',
+  level: 'info',
+  timestamp: '2025-11-09T15:29:42.447Z'
+}
+{
+  message: '✅ Connected to MongoDB',
+  level: 'info',
+  timestamp: '2025-11-09T15:29:42.491Z'
+}
+{
+  message: 'User login: letsrace (role=admin)',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:26.407Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:26 +0000] "POST /login HTTP/1.1" 200 45 "http://localhost:5173/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:26.440Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:35 +0000] "POST /select-car HTTP/1.1" 200 39 "http://localhost:5173/select-car" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:35.167Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:35 +0000] "GET /api/welcome HTTP/1.1" 200 50 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:35.229Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:35 +0000] "GET /api/welcome HTTP/1.1" 304 - "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:35.246Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:38 +0000] "GET /api/reports/HAYA/2025-11-09 HTTP/1.1" 404 32 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:38.406Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:47 +0000] "GET /api/dashboard/2025-02-09 HTTP/1.1" 404 37 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:47.837Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:49 +0000] "GET /api/dashboard/2025-02-09 HTTP/1.1" 404 37 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:49.812Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:55 +0000] "GET /api/dashboard/2025-02-02 HTTP/1.1" 404 37 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:55.083Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:30:56 +0000] "GET /api/reports/HAYA/2025-02-02 HTTP/1.1" 404 32 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:30:56.957Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:31:33 +0000] "GET /api/dashboard/2025-02-02 HTTP/1.1" 404 37 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:31:33.079Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:31:33 +0000] "GET /api/dashboard/2025-02-02 HTTP/1.1" 404 37 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:31:33.640Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:31:34 +0000] "GET /api/dashboard/2025-02-02 HTTP/1.1" 404 37 "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:31:34.119Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:33:58 +0000] "GET /api/welcome HTTP/1.1" 304 - "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:33:58.249Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:33:58 +0000] "GET /api/welcome HTTP/1.1" 304 - "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:33:58.260Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:33:59 +0000] "GET /api/welcome HTTP/1.1" 304 - "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:33:59.679Z'
+}
+{
+  message: '::1 - - [09/Nov/2025:15:33:59 +0000] "GET /api/welcome HTTP/1.1" 304 - "http://localhost:5173/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"',
+  level: 'info',
+  timestamp: '2025-11-09T15:33:59.691Z'
+}
