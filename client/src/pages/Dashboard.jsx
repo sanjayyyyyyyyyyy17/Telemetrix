@@ -1,7 +1,13 @@
+// ✅ CORRECT FRONTEND Dashboard.jsx
+// This goes in: client/src/pages/Dashboard.jsx
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../api";
 import DataCard from "../components/DataCard";
+import AIInsights from "../components/AIInsights";
+import GamificationWidget from "../components/GamificationWidget";
+import VisualizationPlayground from "../components/VisualizationPlayground";
 import { motion, AnimatePresence } from "framer-motion";
 
 function todayISO() {
@@ -43,6 +49,7 @@ export default function Dashboard() {
   const [msg, setMsg] = useState("Select date and fetch telemetry");
   const [clock, setClock] = useState(new Date());
   const [compareData, setCompareData] = useState(null);
+  const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false);
 
   const carTheme = localStorage.getItem("selectedCar") || localStorage.getItem("carTheme") || "THOR";
   const theme =
@@ -78,30 +85,63 @@ export default function Dashboard() {
       setMsg("Pick a date");
       return;
     }
+    
     setLoading(true);
     setMsg("Fetching…");
-    const { ok, status, data } = await api.day(date1);
+    setRows([]);
+    
+    console.log("🔍 Fetching data for:", { date: date1, car: carTheme });
+    
+    const { ok, status, data, meta } = await api.day(date1);
+    
+    console.log("📦 API Response:", { ok, status, dataType: typeof data, isArray: Array.isArray(data), length: data?.length });
+    
     setLoading(false);
+    
     if (status === 401) {
-      nav("/");
+      setMsg("❌ Session expired - redirecting to login");
+      setTimeout(() => nav("/"), 1000);
       return;
     }
-    if (!ok || !Array.isArray(data) || data.length === 0) {
-      setMsg("No data available for this date");
+    
+    if (status === 400) {
+      setMsg("⚠️ Please select a car first");
+      setRows([]);
+      return;
+    }
+    
+    if (!ok) {
+      const errorMsg = data?.message || "Failed to fetch data";
+      setMsg(`❌ ${errorMsg}`);
+      setRows([]);
+      return;
+    }
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      setMsg(`ℹ️ No data available for ${date1}`);
       setRows([]);
       return;
     }
 
     const normalized = data.map((r, index) => ({
-      ...r,
-      lapTime: r.lapTime ?? r.lap_time ?? r.laptime ?? r.lap,
-      timestamp: r.timestamp ?? new Date().toISOString(),
+      _id: r._id || `temp-${index}`,
+      speed: r.speed || 0,
+      rpm: r.rpm || 0,
+      temperature: r.temperature || 0,
+      fuelLevel: r.fuelLevel || 0,
+      lapTime: r.lapTime ?? r.lap_time ?? r.laptime ?? r.lap ?? "0:00",
+      timestamp: r.timestamp || new Date().toISOString(),
+      date: r.date,
+      car: r.car || carTheme,
     }));
+    
+    console.log("✅ Normalized data sample:", normalized[0]);
+    console.log("📊 Total records:", normalized.length);
+    
     setRows(normalized);
-    setMsg(`${normalized.length} entries loaded`);
+    setMsg(`✅ ${normalized.length} entries loaded for ${carTheme}`);
   }
 
-  // ✅ FIXED: Compare dates function
   async function compareDates() {
     if (!date1 || !date2) {
       setMsg("Select both dates to compare");
@@ -112,28 +152,21 @@ export default function Dashboard() {
     setMsg("Comparing dates...");
     
     try {
-      console.log("Comparing:", { car: carTheme, date1, date2 });
       const res = await fetch(
         `http://localhost:3000/api/analytics/${carTheme}/${date1}/${date2}`,
         { credentials: "include" }
       );
       
-      console.log("Compare response status:", res.status);
-      
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        console.error("Compare error:", errorData);
         setMsg(`Comparison failed: ${errorData.message || res.statusText}`);
         setLoading(false);
         return;
       }
       
       const data = await res.json();
-      console.log("Compare data received:", data);
       
-      // ✅ FIX: Validate that we actually got data
-      if (!data.avgSpeed || !data.avgRPM) {
-        console.warn("Received empty comparison data:", data);
+      if (!data.avgSpeed && !data.date1Data) {
         setMsg("⚠️ No data found for selected dates");
         setCompareData(null);
         setLoading(false);
@@ -141,17 +174,16 @@ export default function Dashboard() {
       }
       
       setCompareData(data);
-      setMsg("Comparison complete ✅");
+      setMsg("✅ Comparison complete");
     } catch (err) {
       console.error("Comparison error:", err);
-      setMsg("Comparison error: " + err.message);
+      setMsg("❌ Comparison error: " + err.message);
       setCompareData(null);
     } finally {
       setLoading(false);
     }
   }
 
-  // ✅ FIXED: Export PDF function with proper download handling
   async function exportPDF() {
     if (!date1) {
       setMsg("Select a date first");
@@ -162,71 +194,48 @@ export default function Dashboard() {
     setMsg("Generating report...");
     
     try {
-      console.log("Exporting report for:", { car: carTheme, date: date1 });
       const res = await fetch(
         `http://localhost:3000/api/reports/${carTheme}/${date1}`,
-        { 
-          method: "GET", 
-          credentials: "include" 
-        }
+        { method: "GET", credentials: "include" }
       );
-      
-      console.log("Report response status:", res.status);
-      console.log("Response headers:", {
-        contentType: res.headers.get('content-type'),
-        contentDisposition: res.headers.get('content-disposition')
-      });
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        console.error("Report error:", errorData);
         setMsg(`Report export failed: ${errorData.message || res.statusText}`);
         setLoading(false);
         return;
       }
       
-      // ✅ FIX: Proper blob handling for text files
       const blob = await res.blob();
-      console.log("Blob created:", { size: blob.size, type: blob.type });
-      
-      // ✅ FIX: Use Content-Disposition filename from backend
       const contentDisposition = res.headers.get('content-disposition');
       let filename = `${carTheme}_${date1}_report.txt`;
       
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
-        }
+        if (filenameMatch) filename = filenameMatch[1];
       }
       
-      // ✅ FIX: Create download link properly
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.style.display = 'none';
       a.href = url;
       a.download = filename;
-      
       document.body.appendChild(a);
       a.click();
       
-      // ✅ FIX: Cleanup after download
       setTimeout(() => {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       }, 100);
       
-      console.log("✅ Report downloaded:", filename);
       setMsg("✅ Report exported successfully");
     } catch (err) {
-      console.error("PDF export error:", err);
       setMsg("⚠️ Failed to export report: " + err.message);
     } finally {
       setLoading(false);
     }
   }
 
-  // ✅ FIXED: Export comparison PDF function
   async function exportComparisonPDF() {
     if (!date1 || !date2) {
       setMsg("Select two dates for export");
@@ -237,64 +246,42 @@ export default function Dashboard() {
     setMsg("Generating comparison report...");
     
     try {
-      console.log("Exporting comparison report:", { car: carTheme, date1, date2 });
       const res = await fetch(
         `http://localhost:3000/api/reports-compare/${carTheme}/${date1}/${date2}`,
-        { 
-          method: "GET", 
-          credentials: "include" 
-        }
+        { method: "GET", credentials: "include" }
       );
-      
-      console.log("Comparison report response status:", res.status);
-      console.log("Response headers:", {
-        contentType: res.headers.get('content-type'),
-        contentDisposition: res.headers.get('content-disposition')
-      });
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        console.error("Comparison report error:", errorData);
         setMsg(`Comparison export failed: ${errorData.message || res.statusText}`);
         setLoading(false);
         return;
       }
       
-      // ✅ FIX: Proper blob handling
       const blob = await res.blob();
-      console.log("Comparison blob created:", { size: blob.size, type: blob.type });
-      
-      // ✅ FIX: Extract filename from headers
       const contentDisposition = res.headers.get('content-disposition');
       let filename = `${carTheme}_${date1}_vs_${date2}_comparison.txt`;
       
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
-        }
+        if (filenameMatch) filename = filenameMatch[1];
       }
       
-      // ✅ FIX: Create and trigger download
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.style.display = 'none';
       a.href = url;
       a.download = filename;
-      
       document.body.appendChild(a);
       a.click();
       
-      // ✅ FIX: Cleanup
       setTimeout(() => {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       }, 100);
       
-      console.log("✅ Comparison report downloaded:", filename);
       setMsg("✅ Comparison report exported successfully");
     } catch (err) {
-      console.error("Comparison export error:", err);
       setMsg("⚠️ Export comparison failed: " + err.message);
     } finally {
       setLoading(false);
@@ -307,7 +294,7 @@ export default function Dashboard() {
   }
 
   function formatLap(seconds) {
-    if (!seconds) return 0;
+    if (!seconds) return "0:00";
     const m = Math.floor(seconds / 60);
     const s = Math.round(seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
@@ -339,7 +326,7 @@ export default function Dashboard() {
           <div className="metric-title text-sm opacity-70">{carTheme}</div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="mono text-lg">{clock.toLocaleTimeString()}</div>
           <input
             value={date1}
@@ -393,6 +380,15 @@ export default function Dashboard() {
             Logout
           </button>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={() => setShowAdvancedFeatures(!showAdvancedFeatures)}
+          className="px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 text-sm"
+        >
+          {showAdvancedFeatures ? "Hide" : "Show"} Advanced Analytics 🚀
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -460,42 +456,76 @@ export default function Dashboard() {
         </motion.div>
       )}
 
+      {showAdvancedFeatures && rows.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AIInsights date={date1} car={carTheme} />
+            <GamificationWidget date={date1} car={carTheme} />
+          </div>
+          <VisualizationPlayground data={rows} />
+        </motion.div>
+      )}
+
       <div className="panel p-4">
-        <div className="text-sm text-gray-300 mb-3">{msg}</div>
+        <div className="text-sm text-gray-300 mb-3 flex justify-between items-center">
+          <span>{msg}</span>
+          {rows.length > 0 && (
+            <span className="text-xs bg-indigo-600 px-2 py-1 rounded">
+              {rows.length} records
+            </span>
+          )}
+        </div>
+        
         {rows.length === 0 ? (
-          <div className="text-gray-400">
-            {loading ? "Loading…" : "No data for selected date."}
+          <div className="text-gray-400 text-center py-8">
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                <span>Loading…</span>
+              </div>
+            ) : (
+              <div>
+                <div className="text-lg mb-2">📊 No data to display</div>
+                <div className="text-sm opacity-70">
+                  Select a date and click "Fetch" to load telemetry data
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="text-indigo-300">
+                <tr className="text-indigo-300 border-b border-indigo-500/30">
                   <th className="p-2">Time</th>
-                  <th className="p-2">Speed</th>
+                  <th className="p-2">Speed (MPH)</th>
                   <th className="p-2">RPM</th>
-                  <th className="p-2">Lap</th>
-                  <th className="p-2">Temp</th>
-                  <th className="p-2">Fuel</th>
+                  <th className="p-2">Lap Time</th>
+                  <th className="p-2">Temp (°F)</th>
+                  <th className="p-2">Fuel (%)</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r, idx) => (
                   <motion.tr
-                    key={r._id || r.timestamp || idx}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.25 }}
-                    className="border-t border-white/10 hover:bg-[#071827]"
+                    key={r._id || `row-${idx}`}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: idx * 0.02 }}
+                    className="border-t border-white/10 hover:bg-[#071827] transition-colors"
                   >
-                    <td className="p-2 mono">
+                    <td className="p-2 mono text-gray-300">
                       {new Date(r.timestamp).toLocaleTimeString()}
                     </td>
-                    <td className="p-2 mono">{r.speed}</td>
-                    <td className="p-2 mono">{r.rpm}</td>
-                    <td className="p-2 mono">{r.lapTime}</td>
-                    <td className="p-2 mono">{r.temperature}</td>
-                    <td className="p-2 mono">{r.fuelLevel}</td>
+                    <td className="p-2 mono font-semibold">{r.speed || 0}</td>
+                    <td className="p-2 mono font-semibold">{r.rpm || 0}</td>
+                    <td className="p-2 mono">{r.lapTime || "N/A"}</td>
+                    <td className="p-2 mono font-semibold">{r.temperature || 0}</td>
+                    <td className="p-2 mono font-semibold">{r.fuelLevel || 0}</td>
                   </motion.tr>
                 ))}
               </tbody>
