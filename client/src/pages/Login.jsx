@@ -8,6 +8,7 @@ export default function Login() {
   const [msg, setMsg] = useState("");
   const [signup, setSignup] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState("driver"); // NEW: requested department
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -17,23 +18,30 @@ export default function Login() {
     const endpoint = signup ? "/signup" : "/login";
 
     try {
+      const payload = signup
+        ? { username, password, role } // include role on signup
+        : { username, password };
+
       const res = await fetch(`http://localhost:3000${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(payload),
         credentials: "include",
       });
 
       const data = await res.json();
       setLoading(false);
 
-      if (!res.ok) return setMsg(data?.message || "Request failed");
+      if (!res.ok) {
+        return setMsg(data?.message || "Request failed");
+      }
 
       if (signup) {
         setMsg("✅ Account created! Awaiting admin approval.");
         setSignup(false);
         setUsername("");
         setPassword("");
+        setRole("driver");
       } else {
         setMsg("✅ Login successful!");
         setTimeout(() => nav("/select-car"), 700);
@@ -72,14 +80,26 @@ export default function Login() {
             className="w-full p-3 rounded bg-black/30 border border-gray-700 focus:ring-2 focus:ring-[#00BFFF]"
             required
           />
-          <button
-            className="w-full py-3 bg-[#00BFFF] hover:bg-[#00AEEF] text-black font-semibold rounded transition"
-          >
+
+          {signup && (
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full p-3 rounded bg-black/30 border border-gray-700 focus:ring-2 focus:ring-[#00BFFF]"
+            >
+              <option value="driver">Driver</option>
+              <option value="engineer">Engineer</option>
+            </select>
+          )}
+
+          <button className="w-full py-3 bg-[#00BFFF] hover:bg-[#00AEEF] text-black font-semibold rounded transition">
             {loading ? "Please wait..." : signup ? "Sign Up" : "Login"}
           </button>
         </form>
 
-        {msg && <p className="text-center text-sm text-gray-300 mt-4">{msg}</p>}
+        {msg && (
+          <p className="text-center text-sm text-gray-300 mt-4">{msg}</p>
+        )}
 
         <div className="mt-5 text-center text-sm text-gray-400">
           {signup ? "Already have an account?" : "Don't have an account?"}{" "}

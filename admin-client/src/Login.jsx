@@ -3,61 +3,70 @@ import { useState } from "react";
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [msg, setMsg] = useState("");
 
   async function handleLogin(e) {
     e.preventDefault();
-    setError("");
 
     try {
       const res = await fetch("http://localhost:3000/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
 
-      if (data.role === "admin") {
-        window.location.href = "/admin";
-      } else {
-        setError("Not an admin account.");
+      if (!res.ok) {
+        setMsg(data.message || "Login failed");
+        return;
       }
-    } catch (err) {
-      setError(err.message);
+
+      if (data.role !== "admin") {
+        setMsg("❌ You are not an admin");
+        return;
+      }
+
+      window.location.href = "/admin";
+    } catch {
+      setMsg("Server unreachable");
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-white">
       <form
         onSubmit={handleLogin}
-        className="bg-slate-800 p-6 rounded shadow-lg w-80 space-y-4"
+        className="bg-slate-800 p-6 rounded-lg max-w-sm w-full shadow-xl"
       >
-        <h2 className="text-xl font-bold text-center">Admin Login</h2>
+        <h1 className="text-2xl font-bold text-center mb-4 text-green-400">
+          Admin Login
+        </h1>
+
         <input
           type="text"
-          placeholder="Username"
+          placeholder="Admin Username"
+          className="w-full p-3 bg-slate-700 rounded mb-3"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-2 rounded bg-slate-700"
+          required
         />
+
         <input
           type="password"
           placeholder="Password"
+          className="w-full p-3 bg-slate-700 rounded mb-3"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 rounded bg-slate-700"
+          required
         />
-        {error && <div className="text-red-400 text-sm">{error}</div>}
-        <button
-          type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-semibold"
-        >
+
+        <button className="w-full bg-green-600 hover:bg-green-700 p-3 rounded text-black font-bold">
           Login
         </button>
+
+        {msg && <p className="text-red-400 mt-4 text-center">{msg}</p>}
       </form>
     </div>
   );

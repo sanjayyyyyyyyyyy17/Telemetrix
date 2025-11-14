@@ -54,7 +54,6 @@ export default function SelectCar() {
             <option value="">Choose Car</option>
             <option value="THOR">THOR</option>
             <option value="HAYA">HAYA</option>
-            <option value="ODIN">ODIN</option>
           </select>
 
           <input

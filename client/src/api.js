@@ -1,5 +1,4 @@
-// Updated api.js with improved error handling and data processing
-
+// client/src/api.js
 const BASE_URL = "http://localhost:3000";
 
 export const api = {
@@ -10,11 +9,13 @@ export const api = {
         credentials: "include",
       });
       const data = await res.json().catch(() => ({}));
-      return { 
-        ok: res.ok, 
-        data: { 
-          message: data.user?.username ? `Welcome, ${data.user.username}` : "Telemetry Dashboard" 
-        } 
+      return {
+        ok: res.ok,
+        data: {
+          message: data.user?.username
+            ? `Welcome, ${data.user.username}`
+            : "Telemetry Dashboard",
+        },
       };
     } catch (error) {
       console.error("Welcome error:", error);
@@ -40,14 +41,14 @@ export const api = {
     }
   },
 
-  // SIGNUP
-  signup: async (username, password) => {
+  // SIGNUP (now with role)
+  signup: async (username, password, role) => {
     try {
       const res = await fetch(`${BASE_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, role }),
       });
       const data = await res.json().catch(() => ({}));
       return { ok: res.ok, status: res.status, data };
@@ -83,7 +84,11 @@ export const api = {
         body: JSON.stringify({ car, pin }),
       });
       const data = await res.json().catch(() => ({}));
-      console.log("✅ Car selection response:", { ok: res.ok, status: res.status, data });
+      console.log("✅ Car selection response:", {
+        ok: res.ok,
+        status: res.status,
+        data,
+      });
       return { ok: res.ok, status: res.status, data };
     } catch (error) {
       console.error("❌ Car selection error:", error);
@@ -91,19 +96,17 @@ export const api = {
     }
   },
 
-  // FETCH DASHBOARD DATA (FIXED)
+  // FETCH DASHBOARD DATA (existing logic)
   day: async (date) => {
     try {
       console.log("📅 Fetching dashboard data for date:", date);
       const res = await fetch(`${BASE_URL}/api/dashboard/${date}`, {
         credentials: "include",
       });
-      
-      // Get raw response text first for debugging
+
       const text = await res.text();
       console.log("📦 Raw response:", text.substring(0, 200));
-      
-      // Parse JSON
+
       let parsed;
       try {
         parsed = JSON.parse(text);
@@ -111,61 +114,44 @@ export const api = {
         console.error("❌ JSON parse error:", e);
         return { ok: false, status: 500, data: [] };
       }
-      
+
       console.log("🔍 Parsed response structure:", {
         hasData: !!parsed.data,
         hasMeta: !!parsed.meta,
         isArray: Array.isArray(parsed),
         isDataArray: Array.isArray(parsed.data),
-        keys: Object.keys(parsed)
+        keys: Object.keys(parsed),
       });
-      
-      // Handle new response format with meta wrapper
+
       if (parsed.data && Array.isArray(parsed.data)) {
         console.log("✅ Found data array:", parsed.data.length, "records");
-        return { 
-          ok: res.ok, 
-          status: res.status, 
-          data: parsed.data, 
-          meta: parsed.meta 
+        return {
+          ok: res.ok,
+          status: res.status,
+          data: parsed.data,
+          meta: parsed.meta,
         };
       }
-      
-      // Handle direct array response (backward compatibility)
+
       if (Array.isArray(parsed)) {
         console.log("✅ Found direct array:", parsed.length, "records");
-        return { 
-          ok: res.ok, 
-          status: res.status, 
-          data: parsed 
-        };
+        return { ok: res.ok, status: res.status, data: parsed };
       }
-      
-      // Handle error response
+
       if (parsed.message) {
         console.log("⚠️ Server returned message:", parsed.message);
-        return { 
-          ok: res.ok, 
-          status: res.status, 
-          data: parsed 
-        };
+        return { ok: res.ok, status: res.status, data: parsed };
       }
-      
-      // Unknown format
+
       console.warn("⚠️ Unexpected response format:", parsed);
-      return { 
-        ok: res.ok, 
-        status: res.status, 
-        data: [] 
-      };
-      
+      return { ok: res.ok, status: res.status, data: [] };
     } catch (error) {
       console.error("❌ Dashboard fetch error:", error);
       return { ok: false, status: 500, data: [] };
     }
   },
 
-  // GET AI INSIGHTS
+  // Insights + Gamification (unchanged)
   getInsights: async (date) => {
     try {
       console.log("🧠 Fetching insights for:", date);
@@ -173,7 +159,10 @@ export const api = {
         credentials: "include",
       });
       const data = await res.json().catch(() => ({}));
-      console.log("✅ Insights response:", { ok: res.ok, insightsCount: data.insights?.length });
+      console.log("✅ Insights response:", {
+        ok: res.ok,
+        insightsCount: data.insights?.length,
+      });
       return { ok: res.ok, data };
     } catch (error) {
       console.error("❌ Insights error:", error);
@@ -181,7 +170,6 @@ export const api = {
     }
   },
 
-  // GET GAMIFICATION DATA
   getGamification: async (date) => {
     try {
       console.log("🏆 Fetching gamification for:", date);
@@ -189,7 +177,11 @@ export const api = {
         credentials: "include",
       });
       const data = await res.json().catch(() => ({}));
-      console.log("✅ Gamification response:", { ok: res.ok, points: data.points, rank: data.rank });
+      console.log("✅ Gamification response:", {
+        ok: res.ok,
+        points: data.points,
+        rank: data.rank,
+      });
       return { ok: res.ok, data };
     } catch (error) {
       console.error("❌ Gamification error:", error);
