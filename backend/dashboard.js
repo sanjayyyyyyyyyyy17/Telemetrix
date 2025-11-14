@@ -1,5 +1,4 @@
-// ✅ FIXED BACKEND - Correct collection name
-// Replace your entire backend/dashboard.js with this file
+// ✅ FIXED BACKEND - Full corrected dashboard.js with string date matching
 
 import express from "express";
 import mongoose from "mongoose";
@@ -23,8 +22,8 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// ✅ FIXED: Correct collection name with 's'
-const TELEMETRY_COLLECTION = 'dashboarddatas'; // ⚠️ Changed from 'dashboarddata' to 'dashboarddatas'
+// ✅ Correct telemetry collection name
+const TELEMETRY_COLLECTION = "dashboarddatas";
 
 // ✅ Logging setup
 const logStream = fs.createWriteStream(path.join(__dirname, "access.log"), {
@@ -41,7 +40,7 @@ app.use(
   })
 );
 
-// ✅ Session setup - MUST be before routes
+// ✅ Session setup
 app.use(
   session({
     name: "car_sid",
@@ -81,39 +80,32 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// 🎯 CAR ACCESS PIN SYSTEM (hardcoded, secure)
+// 🎯 CAR ACCESS PIN SYSTEM
 const carPins = {
   THOR: "6107",
   HAYA: "1718",
   ODIN: "2023",
 };
 
-// ✅ UTILITY: Get the telemetry collection
+// ✅ UTILITY: Get telemetry collection
 async function getTelemetryCollection() {
   const db = mongoose.connection.db;
   if (!db) throw new Error("Database not connected");
   return db.collection(TELEMETRY_COLLECTION);
 }
 
-// ✅ UTILITY: Parse date safely with timezone handling
-function parseDate(dateString) {
-  // Parse as local date, not UTC
-  const [year, month, day] = dateString.split('-').map(Number);
-  return new Date(year, month - 1, day);
-}
-
-// ✅ UTILITY: Average calculation helper
+// ✅ UTILITY: Average calculator
 function calculateAverage(arr, key) {
   if (!arr.length) return 0;
   const values = arr
-    .map(r => Number(r[key]) || 0)
-    .filter(v => v > 0);
-  return values.length 
+    .map((r) => Number(r[key]) || 0)
+    .filter((v) => v > 0);
+  return values.length
     ? Math.round(values.reduce((a, b) => a + b, 0) / values.length)
     : 0;
 }
 
-// ✅ UTILITY: Gamification calculation function
+// ✅ UTILITY: Gamification scoring
 function calculatePerformancePoints(data) {
   let points = 0;
   let breakdown = {};
@@ -133,7 +125,7 @@ function calculatePerformancePoints(data) {
     breakdown.speed = { points: 5, reason: "Low speed" };
   }
 
-  // RPM scoring (0-20 points) - lower is better
+  // RPM scoring (0-20 points, lower is better)
   if (data.avgRpm < 7500) {
     points += 20;
     breakdown.rpm = { points: 20, reason: "Excellent engine management" };
@@ -178,7 +170,7 @@ function calculatePerformancePoints(data) {
   // Determine rank
   let rank = "Bronze";
   let rankColor = "#CD7F32";
-  
+
   if (points >= 85) {
     rank = "Platinum";
     rankColor = "#E5E4E2";
@@ -193,40 +185,65 @@ function calculatePerformancePoints(data) {
   return { points, rank, rankColor, breakdown };
 }
 
+// ✅ AUTO-CREATE DEFAULT ADMIN
+async function ensureAdminExists() {
+  const admin = await User.findOne({ username: "admin" });
+  if (!admin) {
+    const hashed = await bcrypt.hash("admin123", 10);
+    await User.create({
+      username: "admin",
+      password: hashed,
+      role: "admin",
+      approved: true,
+    });
+    console.log("🚨 DEFAULT ADMIN CREATED → username: admin | password: admin123");
+  }
+}
+ensureAdminExists();
+
 // ============================================
 // AUTHENTICATION ROUTES
 // ============================================
 
 // ✅ Default route
 app.get("/", (req, res) => {
-  res.send("🚗 Car Dashboard Backend is running...");
+  res.send("🚗 Car Dashboard Backend is running.");
 });
 
-// ✅ Signup route (approval required)
+// ✅ Signup with requested role (driver / engineer)
 app.post("/signup", async (req, res) => {
   try {
-    const { username, password } = req.body;
-    if (!username || !password)
+    const { username, password, role } = req.body;
+
+    if (!username || !password) {
       return res
         .status(400)
         .json({ message: "Username and password required" });
+    }
+
+    if (!["driver", "engineer"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role selection." });
+    }
 
     const existing = await User.findOne({ username });
-    if (existing)
+    if (existing) {
       return res.status(409).json({ message: "User already exists" });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
+
     const newUser = new User({
       username,
       password: hashed,
-      role: "user",
+      role: "pending",
+      pendingRole: role,
       approved: false,
     });
+
     await newUser.save();
 
     res.json({
-      message:
-        "Signup successful! Await admin approval before you can log in.",
+      message: "Signup successful! Await admin approval before you can log in.",
     });
   } catch (err) {
     console.error("Signup error:", err);
@@ -234,7 +251,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// ✅ Login route (with debug info)
+// ✅ Login route
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -247,7 +264,6 @@ app.post("/login", async (req, res) => {
     }
 
     const user = await User.findOne({ username });
-
     if (!user) {
       console.log("❌ No user found for username:", username);
       return res.status(401).json({ message: "Invalid credentials" });
@@ -261,7 +277,8 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    if (!user.approved) {
+    // Allow admin even if not using approval
+    if (!user.approved && user.role !== "admin") {
       console.log("⏳ User not approved yet:", username);
       return res.status(403).json({ message: "User not approved by admin" });
     }
@@ -283,49 +300,43 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Logout route
+// ✅ Logout
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
     res.clearCookie("car_sid");
     res.json({ message: "Logged out successfully" });
   });
 });
-
 // ============================================
 // CAR SELECTION & SESSION ROUTES
 // ============================================
 
-// ✅ Route: Select Car + PIN Validation
+// ✅ Select Car + PIN (stores selectedCar in session)
 app.post("/api/selectCar", requireAuth, (req, res) => {
   const { car, pin } = req.body;
-  
+
   console.log("=== CAR SELECTION DEBUG ===");
   console.log("🚗 Car selection attempt:", { car, pin });
-  console.log("Session exists:", !!req.session);
-  console.log("User in session:", req.session.user);
+  console.log("Session user:", req.session.user);
   console.log("Available cars:", Object.keys(carPins));
   console.log("========================");
 
-  // Ensure car exists in our pin list
   if (!carPins[car]) {
     console.log("❌ Invalid car:", car);
     return res.status(400).json({ message: "Invalid car selected" });
   }
 
-  // Match the pin (string compare)
   if (String(carPins[car]) !== String(pin)) {
     console.log("❌ Incorrect PIN for:", car);
-    console.log("Expected:", carPins[car], "Got:", pin);
     return res.status(403).json({ message: "Invalid PIN" });
   }
 
-  // ✅ Success: store selected car in session
   req.session.selectedCar = car;
   console.log(`✅ Car access granted for ${car}`);
   res.json({ message: `Access granted for ${car}` });
 });
 
-// ✅ Debug route (view session data)
+// ✅ Debug session route
 app.get("/debug/session", (req, res) => {
   res.json({
     session: req.session,
@@ -339,7 +350,7 @@ app.get("/debug/session", (req, res) => {
 // ADMIN ROUTES
 // ============================================
 
-// ✅ Admin: Get all users
+// ✅ Get all users (admin only)
 app.get("/admin/users", requireAdmin, async (req, res) => {
   try {
     const users = await User.find().select("-password");
@@ -350,188 +361,115 @@ app.get("/admin/users", requireAdmin, async (req, res) => {
   }
 });
 
-// ✅ Admin: Approve user
+// ✅ Approve user (pendingRole → role)
 app.post("/admin/approve/:username", requireAdmin, async (req, res) => {
   try {
     const { username } = req.params;
-    const updated = await User.findOneAndUpdate(
-      { username },
-      { approved: true },
-      { new: true }
-    );
-    if (!updated)
+
+    const user = await User.findOne({ username });
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
-    res.json({ message: `${username} approved successfully.` });
+    }
+    if (!user.pendingRole) {
+      return res
+        .status(400)
+        .json({ message: "User has no pending role to approve" });
+    }
+
+    user.role = user.pendingRole; // driver or engineer
+    user.pendingRole = null;
+    user.approved = true;
+
+    await user.save();
+
+    res.json({ message: `${username} approved as ${user.role}.` });
   } catch (err) {
     console.error("Approval error:", err);
     res.status(500).json({ message: "Error approving user" });
   }
 });
-
 // ============================================
 // DASHBOARD & TELEMETRY ROUTES
 // ============================================
 
-// ✅ Dashboard data fetch route (with gamification)
+// ✅ Main dashboard data (+ gamification meta) - FIXED: String date matching
 app.get("/api/dashboard/:date", requireAuth, async (req, res) => {
   try {
     const { date } = req.params;
     const selectedCar = req.session.selectedCar;
-    
+
     console.log("📊 Fetching dashboard data:", { date, car: selectedCar });
     console.log("📦 Using collection:", TELEMETRY_COLLECTION);
 
     if (!selectedCar) {
-      return res.status(400).json({ message: "No car selected. Please select a car first." });
+      return res
+        .status(400)
+        .json({ message: "No car selected. Please select a car first." });
     }
 
     const collection = await getTelemetryCollection();
-    
-    // Log all data in collection for debugging
-    const allData = await collection.find({}).limit(5).toArray();
-    console.log("🔍 Sample data from collection:", JSON.stringify(allData, null, 2));
-    
-    const dateStart = parseDate(date);
-    const dateEnd = new Date(dateStart);
-    dateEnd.setDate(dateEnd.getDate() + 1);
 
-    console.log("📅 Date range:", { start: dateStart, end: dateEnd });
-
-    // Filter by selected car AND date
-    const records = await collection.find({
-      car: selectedCar,
-      date: {
-        $gte: dateStart,
-        $lt: dateEnd,
-      },
-    }).toArray();
+    const records = await collection
+      .find({
+        car: selectedCar,
+        date: { $eq: date }
+      })
+      .toArray();
 
     console.log(`✅ Found ${records.length} records for ${selectedCar} on ${date}`);
 
-    // Calculate gamification for the fetched data
-    if (records.length > 0) {
-      const avgSpeed = calculateAverage(records, 'speed');
-      const avgRpm = calculateAverage(records, 'rpm');
-      const avgTemp = calculateAverage(records, 'temperature');
-      const avgFuel = calculateAverage(records, 'fuelLevel');
-
-      const gamification = calculatePerformancePoints({
-        avgSpeed,
-        avgRpm,
-        avgTemp,
-        avgFuel,
-      });
-
-      // Include gamification in response metadata
-      res.json({
-        data: records,
-        meta: {
-          count: records.length,
-          date: date,
-          car: selectedCar,
-          gamification: gamification
-        }
-      });
-    } else {
-      res.json({ data: [], meta: { count: 0, date, car: selectedCar } });
-    }
-    
-  } catch (err) {
-    console.error("💥 Dashboard fetch error:", err);
-    res.status(500).json({ message: "Error fetching dashboard data: " + err.message });
-  }
-});
-
-// ✅ Analytics endpoint for comparison
-app.get("/api/analytics/:car/:date1/:date2", requireAuth, async (req, res) => {
-  try {
-    const { car, date1, date2 } = req.params;
-    console.log("📈 Analytics request:", { car, date1, date2 });
-
-    const collection = await getTelemetryCollection();
-
-    const date1Start = parseDate(date1);
-    const date1End = new Date(date1Start);
-    date1End.setDate(date1End.getDate() + 1);
-    
-    const date2Start = parseDate(date2);
-    const date2End = new Date(date2Start);
-    date2End.setDate(date2End.getDate() + 1);
-
-    console.log("🔎 Querying date ranges:", { date1Start, date1End, date2Start, date2End });
-    
-    const data1 = await collection.find({
-      car: car,
-      date: { $gte: date1Start, $lt: date1End }
-    }).toArray();
-
-    const data2 = await collection.find({
-      car: car,
-      date: { $gte: date2Start, $lt: date2End }
-    }).toArray();
-
-    console.log(`📊 Found ${data1.length} records for date1, ${data2.length} for date2`);
-
-    if (!data1.length || !data2.length) {
-      return res.status(404).json({ 
-        message: "Insufficient data for comparison",
-        date1Count: data1.length,
-        date2Count: data2.length
+    if (!records.length) {
+      return res.json({
+        data: [],
+        meta: { count: 0, date, car: selectedCar },
       });
     }
 
-    // Return structured data, not formatted strings
-    const result = {
-      date1: date1,
-      date2: date2,
-      date1Data: {
-        avgSpeed: calculateAverage(data1, 'speed'),
-        avgRPM: calculateAverage(data1, 'rpm'),
-        avgTemp: calculateAverage(data1, 'temperature'),
-        avgFuel: calculateAverage(data1, 'fuelLevel'),
-      },
-      date2Data: {
-        avgSpeed: calculateAverage(data2, 'speed'),
-        avgRPM: calculateAverage(data2, 'rpm'),
-        avgTemp: calculateAverage(data2, 'temperature'),
-        avgFuel: calculateAverage(data2, 'fuelLevel'),
-      },
-      // For backward compatibility with frontend expecting these keys
-      avgSpeed: `${calculateAverage(data1, 'speed')} vs ${calculateAverage(data2, 'speed')}`,
-      avgRPM: `${calculateAverage(data1, 'rpm')} vs ${calculateAverage(data2, 'rpm')}`,
-      avgTemp: `${calculateAverage(data1, 'temperature')} vs ${calculateAverage(data2, 'temperature')}`,
-      avgFuel: `${calculateAverage(data1, 'fuelLevel')} vs ${calculateAverage(data2, 'fuelLevel')}`,
-    };
+    const avgSpeed = calculateAverage(records, "speed");
+    const avgRpm = calculateAverage(records, "rpm");
+    const avgTemp = calculateAverage(records, "temperature");
+    const avgFuel = calculateAverage(records, "fuelLevel");
 
-    console.log("✅ Returning comparison:", result);
-    res.json(result);
-    
+    const gamification = calculatePerformancePoints({
+      avgSpeed,
+      avgRpm,
+      avgTemp,
+      avgFuel,
+    });
+
+    res.json({
+      data: records,
+      meta: {
+        count: records.length,
+        date,
+        car: selectedCar,
+        gamification,
+      },
+    });
   } catch (err) {
-    console.error("Analytics error:", err);
-    res.status(500).json({ message: "Error fetching analytics: " + err.message });
+    console.error("Dashboard fetch error:", err);
+    res.status(500).json({ message: "Error fetching dashboard data" });
   }
 });
 
 // ============================================
-// REPORT GENERATION ROUTES
+// REPORTS
 // ============================================
 
-// ✅ Reports endpoint - Generates text files
+// ✅ Text report for one date - FIXED: String date matching
 app.get("/api/reports/:car/:date", requireAuth, async (req, res) => {
   try {
     const { car, date } = req.params;
     console.log("📄 Generating report for:", { car, date });
 
     const collection = await getTelemetryCollection();
-    
-    const dateStart = parseDate(date);
-    const dateEnd = new Date(dateStart);
-    dateEnd.setDate(dateEnd.getDate() + 1);
 
-    const data = await collection.find({
-      car: car,
-      date: { $gte: dateStart, $lt: dateEnd }
-    }).toArray();
+    const data = await collection
+      .find({
+        car,
+        date: { $eq: date }
+      })
+      .toArray();
 
     console.log(`📊 Found ${data.length} entries for report`);
 
@@ -543,103 +481,192 @@ app.get("/api/reports/:car/:date", requireAuth, async (req, res) => {
 Date: ${new Date(date).toDateString()}
 Total Entries: ${data.length}
 
-${data.map((entry, i) => `
+${data
+  .map(
+    (entry, i) => `
 Entry ${i + 1}
-Time: ${entry.timestamp || 'N/A'}
-Speed: ${entry.speed || 'N/A'} MPH
-RPM: ${entry.rpm || 'N/A'}
-Temperature: ${entry.temperature || 'N/A'}°F
-Fuel Level: ${entry.fuelLevel || 'N/A'}%
-Lap Time: ${entry.lapTime || entry.lap_time || entry.lap || 'N/A'}
----`).join('\n')}
+Time: ${entry.timestamp || "N/A"}
+Speed: ${entry.speed || "N/A"}
+RPM: ${entry.rpm || "N/A"}
+Temperature: ${entry.temperature || "N/A"}
+Fuel Level: ${entry.fuelLevel || "N/A"}
+Lap Time: ${entry.lapTime || entry.lap_time || entry.lap || "N/A"}
+---`
+  )
+  .join("\n")}
 
 Generated: ${new Date().toLocaleString()}`;
 
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${car}_${date}_report.txt"`);
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${car}_${date}_report.txt"`
+    );
     res.send(reportText);
-    
   } catch (err) {
     console.error("Report generation error:", err);
-    res.status(500).json({ message: "Error generating report: " + err.message });
+    res
+      .status(500)
+      .json({ message: "Error generating report: " + err.message });
   }
 });
 
-// ✅ Comparison report endpoint
-app.get("/api/reports-compare/:car/:date1/:date2", requireAuth, async (req, res) => {
-  try {
-    const { car, date1, date2 } = req.params;
-    console.log("📊 Generating comparison report for:", { car, date1, date2 });
+// ✅ Analytics/Comparison endpoint (what frontend actually calls)
+app.get(
+  "/api/analytics/:car/:date1/:date2",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const { car, date1, date2 } = req.params;
+      console.log("📊 Generating analytics/comparison for:", { car, date1, date2 });
 
-    const collection = await getTelemetryCollection();
+      const collection = await getTelemetryCollection();
 
-    const date1Start = parseDate(date1);
-    const date1End = new Date(date1Start);
-    date1End.setDate(date1End.getDate() + 1);
-    
-    const date2Start = parseDate(date2);
-    const date2End = new Date(date2Start);
-    date2End.setDate(date2End.getDate() + 1);
+      // Debug: Check what dates exist in the database
+      const allDates = await collection.distinct("date", { car });
+      console.log("📅 Available dates in DB for", car, ":", allDates);
 
-    const data1 = await collection.find({
-      car: car,
-      date: { $gte: date1Start, $lt: date1End }
-    }).toArray();
+      const data1 = await collection
+        .find({ car, date: { $eq: date1 } })
+        .toArray();
+      const data2 = await collection
+        .find({ car, date: { $eq: date2 } })
+        .toArray();
 
-    const data2 = await collection.find({
-      car: car,
-      date: { $gte: date2Start, $lt: date2End }
-    }).toArray();
+      console.log(
+        `📊 Found ${data1.length} entries for date1 (${date1}), ${data2.length} for date2 (${date2})`
+      );
 
-    console.log(`📊 Found ${data1.length} entries for date1, ${data2.length} for date2`);
+      if (!data1.length && !data2.length) {
+        return res.status(404).json({ 
+          message: "No data found for either date",
+          availableDates: allDates,
+          requestedDates: { date1, date2 }
+        });
+      }
 
-    if (!data1.length || !data2.length) {
-      return res.status(404).json({ message: "Insufficient data for comparison" });
+      if (!data1.length) {
+        return res.status(404).json({ 
+          message: `No data found for date1: ${date1}`,
+          availableDates: allDates
+        });
+      }
+
+      if (!data2.length) {
+        return res.status(404).json({ 
+          message: `No data found for date2: ${date2}`,
+          availableDates: allDates
+        });
+      }
+
+      const summary = {
+        date1,
+        date2,
+        car,
+        date1Data: {
+          avgSpeed: calculateAverage(data1, "speed"),
+          avgRpm: calculateAverage(data1, "rpm"),
+          avgTemp: calculateAverage(data1, "temperature"),
+          avgFuel: calculateAverage(data1, "fuelLevel"),
+        },
+        date2Data: {
+          avgSpeed: calculateAverage(data2, "speed"),
+          avgRpm: calculateAverage(data2, "rpm"),
+          avgTemp: calculateAverage(data2, "temperature"),
+          avgFuel: calculateAverage(data2, "fuelLevel"),
+        },
+      };
+
+      res.json(summary);
+    } catch (err) {
+      console.error("Error generating analytics/comparison:", err);
+      res.status(500).json({
+        message: "Error generating comparison: " + err.message,
+      });
     }
-
-    const reportText = `Car Telemetry Comparison Report - ${car}
-Date 1: ${new Date(date1).toDateString()} (${data1.length} entries)
-Date 2: ${new Date(date2).toDateString()} (${data2.length} entries)
-
-COMPARISON RESULTS:
-
-Average Speed:
-  ${date1}: ${calculateAverage(data1, 'speed')} MPH
-  ${date2}: ${calculateAverage(data2, 'speed')} MPH
-  Difference: ${calculateAverage(data2, 'speed') - calculateAverage(data1, 'speed')} MPH
-
-Average RPM:
-  ${date1}: ${calculateAverage(data1, 'rpm')} RPM
-  ${date2}: ${calculateAverage(data2, 'rpm')} RPM
-  Difference: ${calculateAverage(data2, 'rpm') - calculateAverage(data1, 'rpm')} RPM
-
-Average Temperature:
-  ${date1}: ${calculateAverage(data1, 'temperature')}°F
-  ${date2}: ${calculateAverage(data2, 'temperature')}°F
-  Difference: ${calculateAverage(data2, 'temperature') - calculateAverage(data1, 'temperature')}°F
-
-Average Fuel Level:
-  ${date1}: ${calculateAverage(data1, 'fuelLevel')}%
-  ${date2}: ${calculateAverage(data2, 'fuelLevel')}%
-  Difference: ${calculateAverage(data2, 'fuelLevel') - calculateAverage(data1, 'fuelLevel')}%
-
-Generated: ${new Date().toLocaleString()}`;
-
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${car}_${date1}_vs_${date2}_comparison.txt"`);
-    res.send(reportText);
-    
-  } catch (err) {
-    console.error("Comparison report error:", err);
-    res.status(500).json({ message: "Error generating comparison report: " + err.message });
   }
-});
+);
 
+// ✅ Comparison report for two dates - FIXED: String date matching (legacy route)
+app.get(
+  "/api/reports-compare/:car/:date1/:date2",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const { car, date1, date2 } = req.params;
+      console.log("📊 Generating comparison report for:", { car, date1, date2 });
+
+      const collection = await getTelemetryCollection();
+
+      // Debug: Check what dates exist in the database
+      const allDates = await collection.distinct("date", { car });
+      console.log("📅 Available dates in DB for", car, ":", allDates);
+
+      const data1 = await collection
+        .find({ car, date: { $eq: date1 } })
+        .toArray();
+      const data2 = await collection
+        .find({ car, date: { $eq: date2 } })
+        .toArray();
+
+      console.log(
+        `📊 Found ${data1.length} entries for date1 (${date1}), ${data2.length} for date2 (${date2})`
+      );
+
+      if (!data1.length && !data2.length) {
+        return res.status(404).json({ 
+          message: "No data found for either date",
+          availableDates: allDates,
+          requestedDates: { date1, date2 }
+        });
+      }
+
+      if (!data1.length) {
+        return res.status(404).json({ 
+          message: `No data found for date1: ${date1}`,
+          availableDates: allDates
+        });
+      }
+
+      if (!data2.length) {
+        return res.status(404).json({ 
+          message: `No data found for date2: ${date2}`,
+          availableDates: allDates
+        });
+      }
+
+      const summary = {
+        date1,
+        date2,
+        car,
+        date1Data: {
+          avgSpeed: calculateAverage(data1, "speed"),
+          avgRpm: calculateAverage(data1, "rpm"),
+          avgTemp: calculateAverage(data1, "temperature"),
+          avgFuel: calculateAverage(data1, "fuelLevel"),
+        },
+        date2Data: {
+          avgSpeed: calculateAverage(data2, "speed"),
+          avgRpm: calculateAverage(data2, "rpm"),
+          avgTemp: calculateAverage(data2, "temperature"),
+          avgFuel: calculateAverage(data2, "fuelLevel"),
+        },
+      };
+
+      res.json(summary);
+    } catch (err) {
+      console.error("Error generating comparison report:", err);
+      res.status(500).json({
+        message: "Error generating comparison report: " + err.message,
+      });
+    }
+  }
+);
 // ============================================
-// NEW FEATURES: AI INSIGHTS & GAMIFICATION
+// INSIGHTS & GAMIFICATION
 // ============================================
 
-// ✅ AI Performance Insights endpoint
+// ✅ AI-style insights based on averages - Already correct with string date matching
 app.get("/api/insights/:date", requireAuth, async (req, res) => {
   try {
     const { date } = req.params;
@@ -652,54 +679,57 @@ app.get("/api/insights/:date", requireAuth, async (req, res) => {
     console.log("🧠 Generating insights for:", { car, date });
 
     const collection = await getTelemetryCollection();
-    
-    const dateStart = parseDate(date);
-    const dateEnd = new Date(dateStart);
-    dateEnd.setDate(dateEnd.getDate() + 1);
 
-    const telemetry = await collection.find({
-      car: car,
-      date: { $gte: dateStart, $lt: dateEnd }
-    }).toArray();
+    const telemetry = await collection
+      .find({
+        car,
+        date: date
+      })
+      .toArray();
 
     if (!telemetry.length) {
       return res.status(404).json({ message: "No data found for insights" });
     }
 
-    // Calculate averages
-    const avgSpeed = calculateAverage(telemetry, 'speed');
-    const avgRpm = calculateAverage(telemetry, 'rpm');
-    const avgTemp = calculateAverage(telemetry, 'temperature');
-    const avgFuel = calculateAverage(telemetry, 'fuelLevel');
+    const avgSpeed = calculateAverage(telemetry, "speed");
+    const avgRpm = calculateAverage(telemetry, "rpm");
+    const avgTemp = calculateAverage(telemetry, "temperature");
+    const avgFuel = calculateAverage(telemetry, "fuelLevel");
 
-    // Generate AI-style insights
     const insights = [];
-    
+
+    // Some rule-based insights:
     if (avgTemp > 200)
-      insights.push("⚠️ Temperature spikes detected – check your cooling system.");
+      insights.push("⚠️ Temperature spikes detected — check your cooling system.");
     if (avgTemp > 220)
       insights.push("🔥 CRITICAL: Engine running dangerously hot!");
+
     if (avgSpeed < 100)
-      insights.push("🐌 Lower average speed – possible cautious driving pattern.");
+      insights.push("🌐 Lower average speed — possible cautious driving pattern.");
     if (avgSpeed > 180)
-      insights.push("⚡ High-speed performance detected – excellent track conditions!");
+      insights.push(
+        "⚡ High-speed performance detected — excellent track conditions!"
+      );
+
     if (avgFuel < 30)
-      insights.push("⛽ Fuel efficiency dropping – optimize acceleration habits.");
+      insights.push("⛽ Fuel efficiency dropping — optimize acceleration habits.");
     if (avgFuel < 15)
-      insights.push("⚠️ LOW FUEL WARNING – consider pit stop strategy.");
+      insights.push("⚠️ LOW FUEL WARNING — consider pit stop strategy.");
+
     if (avgRpm > 8500)
-      insights.push("⚙️ High engine stress observed – smooth gear transitions recommended.");
+      insights.push(
+        "⚙️ High engine stress observed — smooth gear transitions recommended."
+      );
     if (avgRpm > 9000)
-      insights.push("🔴 RPM redlining frequently – risk of engine damage!");
-    
-    // Positive insights
+      insights.push("🔴 RPM redlining frequently — risk of engine damage!");
+
     if (avgTemp < 180 && avgRpm < 8000)
       insights.push("✅ Excellent thermal management and smooth driving!");
     if (avgFuel > 60)
-      insights.push("💚 Great fuel efficiency – optimal acceleration control.");
-    
+      insights.push("💚 Great fuel efficiency — optimal acceleration control.");
+
     if (!insights.length)
-      insights.push("✅ Performance optimal – no irregularities detected.");
+      insights.push("✅ Performance optimal — no irregularities detected.");
 
     console.log("✅ Generated", insights.length, "insights");
 
@@ -714,11 +744,13 @@ app.get("/api/insights/:date", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("Insights error:", err);
-    res.status(500).json({ message: "Error generating insights: " + err.message });
+    res
+      .status(500)
+      .json({ message: "Error generating insights: " + err.message });
   }
 });
 
-// ✅ Gamification endpoint
+// ✅ Gamification endpoint - Already correct with string date matching
 app.get("/api/gamification/:date", requireAuth, async (req, res) => {
   try {
     const { date } = req.params;
@@ -731,24 +763,24 @@ app.get("/api/gamification/:date", requireAuth, async (req, res) => {
     console.log("🏆 Calculating gamification for:", { car, date });
 
     const collection = await getTelemetryCollection();
-    
-    const dateStart = parseDate(date);
-    const dateEnd = new Date(dateStart);
-    dateEnd.setDate(dateEnd.getDate() + 1);
 
-    const telemetry = await collection.find({
-      car: car,
-      date: { $gte: dateStart, $lt: dateEnd }
-    }).toArray();
+    const telemetry = await collection
+      .find({
+        car,
+        date: date
+      })
+      .toArray();
 
     if (!telemetry.length) {
-      return res.status(404).json({ message: "No data found for gamification" });
+      return res
+        .status(404)
+        .json({ message: "No data found for gamification" });
     }
 
-    const avgSpeed = calculateAverage(telemetry, 'speed');
-    const avgRpm = calculateAverage(telemetry, 'rpm');
-    const avgTemp = calculateAverage(telemetry, 'temperature');
-    const avgFuel = calculateAverage(telemetry, 'fuelLevel');
+    const avgSpeed = calculateAverage(telemetry, "speed");
+    const avgRpm = calculateAverage(telemetry, "rpm");
+    const avgTemp = calculateAverage(telemetry, "temperature");
+    const avgFuel = calculateAverage(telemetry, "fuelLevel");
 
     const gamification = calculatePerformancePoints({
       avgSpeed,
@@ -762,12 +794,14 @@ app.get("/api/gamification/:date", requireAuth, async (req, res) => {
     res.json({
       car,
       date,
-      ...gamification,
-      stats: { avgSpeed, avgRpm, avgTemp, avgFuel }
+      gamification,
+      stats: { avgSpeed, avgRpm, avgTemp, avgFuel },
     });
   } catch (err) {
     console.error("Gamification error:", err);
-    res.status(500).json({ message: "Error calculating gamification: " + err.message });
+    res.status(500).json({
+      message: "Error calculating gamification: " + err.message,
+    });
   }
 });
 
