@@ -62,11 +62,11 @@ function CompareDataBlock({ compareData, date1, date2, role }) {
   // Helper to get delta color
   const getDeltaColor = (val1, val2, lowerIsBetter = false) => {
     const diff = (val2 || 0) - (val1 || 0);
-    if (diff === 0) return "#9ca3af";
+    if (diff === 0) return "#64748b";
     if (lowerIsBetter) {
-      return diff < 0 ? "#22c55e" : "#ef4444";
+      return diff < 0 ? "#10b981" : "#ef4444";
     }
-    return diff > 0 ? "#22c55e" : "#ef4444";
+    return diff > 0 ? "#10b981" : "#ef4444";
   };
 
   // Base metrics (visible to all roles)
@@ -220,33 +220,36 @@ function CompareDataBlock({ compareData, date1, date2, role }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="panel p-6 bg-black/30 rounded-lg mt-6 border border-indigo-500/30"
+      className="p-8 bg-gradient-to-br from-white via-slate-50 to-blue-50 rounded-2xl mt-8 border-2 border-blue-300 shadow-2xl"
+      style={{
+        boxShadow: "0 0 40px rgba(59, 130, 246, 0.3), 0 20px 60px rgba(0, 0, 0, 0.1)",
+      }}
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-xl font-semibold text-indigo-300">
+      <div className="flex items-center justify-between mb-8">
+        <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
           📊 Comparison Analysis
         </div>
-        <div className="text-sm text-gray-400 mono">
+        <div className="text-sm font-semibold text-slate-600 mono bg-white/80 px-4 py-2 rounded-lg border border-blue-200">
           {compareData.car} • {date1} ↔ {date2}
         </div>
       </div>
 
       {/* Header Row */}
-      <div className="grid grid-cols-4 gap-4 mb-4 pb-3 border-b border-indigo-500/20">
-        <div className="text-sm font-semibold text-indigo-200">Metric</div>
-        <div className="text-sm font-semibold text-center text-cyan-300">
+      <div className="grid grid-cols-4 gap-6 mb-6 pb-4 border-b-2 border-blue-200">
+        <div className="text-sm font-bold text-slate-700 uppercase tracking-wider">Metric</div>
+        <div className="text-sm font-bold text-center text-blue-600 uppercase tracking-wider">
           {date1}
         </div>
-        <div className="text-sm font-semibold text-center text-yellow-300">
+        <div className="text-sm font-bold text-center text-cyan-600 uppercase tracking-wider">
           Δ Change
         </div>
-        <div className="text-sm font-semibold text-center text-purple-300">
+        <div className="text-sm font-bold text-center text-purple-600 uppercase tracking-wider">
           {date2}
         </div>
       </div>
 
       {/* Metrics Grid */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {metricsToShow.map((metric, idx) => {
           const delta = calcDelta(metric.val1, metric.val2);
           const deltaColor = getDeltaColor(
@@ -261,38 +264,41 @@ function CompareDataBlock({ compareData, date1, date2, role }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.03 }}
-              className="grid grid-cols-4 gap-4 items-center bg-black/20 p-3 rounded hover:bg-black/30 transition-colors"
+              className="grid grid-cols-4 gap-6 items-center bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-slate-200 hover:bg-white/80 hover:shadow-lg hover:border-blue-300 transition-all duration-300"
+              style={{
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+              }}
             >
               {/* Metric Label */}
-              <div className="text-sm text-gray-300">{metric.label}</div>
+              <div className="text-sm font-semibold text-slate-700">{metric.label}</div>
 
               {/* Date 1 Value */}
               <div className="text-center">
-                <div className="mono text-lg font-semibold text-cyan-300">
+                <div className="mono text-xl font-bold text-blue-600">
                   {metric.val1}
                 </div>
-                <div className="text-xs text-gray-500">{metric.unit}</div>
+                <div className="text-xs text-slate-500 font-medium mt-1">{metric.unit}</div>
               </div>
 
               {/* Delta */}
               <div className="text-center">
                 <div
-                  className="mono text-lg font-bold"
+                  className="mono text-xl font-extrabold"
                   style={{ color: deltaColor }}
                 >
                   {delta}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-slate-500 font-medium mt-1">
                   {metric.lowerIsBetter ? "↓ better" : "↑ better"}
                 </div>
               </div>
 
               {/* Date 2 Value */}
               <div className="text-center">
-                <div className="mono text-lg font-semibold text-purple-300">
+                <div className="mono text-xl font-bold text-purple-600">
                   {metric.val2}
                 </div>
-                <div className="text-xs text-gray-500">{metric.unit}</div>
+                <div className="text-xs text-slate-500 font-medium mt-1">{metric.unit}</div>
               </div>
             </motion.div>
           );
@@ -300,8 +306,8 @@ function CompareDataBlock({ compareData, date1, date2, role }) {
       </div>
 
       {/* Summary Footer */}
-      <div className="mt-6 pt-4 border-t border-indigo-500/20">
-        <div className="text-xs text-gray-400 text-center">
+      <div className="mt-8 pt-6 border-t-2 border-blue-200">
+        <div className="text-xs font-semibold text-slate-600 text-center uppercase tracking-wider bg-blue-50/50 py-2 rounded-lg">
           {isDriver && "Driver Metrics View"}
           {isEngineer && "Engineer Metrics View"}
           {isAdmin && "Admin View - All Metrics"}
@@ -325,9 +331,9 @@ export default function Dashboard() {
   const [msg, setMsg] = useState("Select date and fetch telemetry");
   const [clock, setClock] = useState(new Date());
   const [compareData, setCompareData] = useState(null);
-  const [showCompare, setShowCompare] = useState(false); // <-- ADDED
+  const [showCompare, setShowCompare] = useState(false);
   const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false);
-  const [role, setRole] = useState(null); // "driver" | "engineer" | "admin" | null
+  const [role, setRole] = useState(null);
 
   const carTheme =
     localStorage.getItem("selectedCar") ||
@@ -336,8 +342,8 @@ export default function Dashboard() {
 
   const theme =
     carTheme === "HAYA"
-      ? { accent: "#FF2800", bg: "from-red-900 to-red-700" }
-      : { accent: "#C0C0C0", bg: "from-[#1C1C1C] to-gray-600" };
+      ? { accent: "#FF2800", bg: "from-red-500 to-orange-400" }
+      : { accent: "#3b82f6", bg: "from-blue-500 to-cyan-400" };
 
   // Live clock
   useEffect(() => {
@@ -370,8 +376,6 @@ export default function Dashboard() {
       }
     })();
   }, []);
-
-// ... (safeAvg, baseTotals, driverAgg, engineerAgg - no changes here) ...
 
   // Summary for base things
   const baseTotals = useMemo(
@@ -684,446 +688,686 @@ export default function Dashboard() {
   const isAdmin = role === "admin";
 
   return (
-    <div className="min-h-screen p-8 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <div className="h1 text-2xl">{welcome}</div>
-          <div className="metric-title text-sm opacity-70">
-            {carTheme} {role ? `• ${role.toUpperCase()}` : ""}
+    <>
+      <style>{`
+        @keyframes gradientShift {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+        
+        .animated-gradient-bg {
+          background: linear-gradient(
+            135deg,
+            #E4E0F2 0%,
+            #D9DFF1 25%,
+            #CED9EB 50%,
+            #E8EAF3 75%,
+            #E4E0F2 100%
+          );
+          background-size: 600% 600%;
+          animation: gradientShift 17s ease infinite;
+        }
+
+        .animated-gradient-bg-haya {
+          background: linear-gradient(135deg, #0A8A63 0%, #006B4A 50%, #003E2B 100%);
+          background-size: 600% 600%;
+          animation: gradientShift 17s ease infinite;
+        }
+
+        .animated-gradient-bg-thor {
+          background: linear-gradient(135deg, #FF6C00 0%, #003C78 100%);
+          background-size: 600% 600%;
+          animation: gradientShift 17s ease infinite;
+        }
+
+        @keyframes cardShimmer {
+          0% {
+            background-position: -200% center;
+          }
+          100% {
+            background-position: 200% center;
+          }
+        }
+
+        @keyframes softPulse {
+          0%, 100% {
+            box-shadow: 
+              0 8px 32px rgba(228, 224, 242, 0.4),
+              0 2px 8px rgba(206, 217, 235, 0.3),
+              inset 0 1px 2px rgba(255, 255, 255, 0.8);
+          }
+          50% {
+            box-shadow: 
+              0 12px 40px rgba(217, 223, 241, 0.5),
+              0 4px 12px rgba(206, 217, 235, 0.4),
+              inset 0 1px 2px rgba(255, 255, 255, 0.9);
+          }
+        }
+
+        .premium-card {
+          background: linear-gradient(
+            135deg,
+            rgba(240, 240, 245, 0.75) 0%,
+            rgba(235, 235, 242, 0.7) 25%,
+            rgba(230, 232, 240, 0.75) 50%,
+            rgba(225, 228, 235, 0.7) 75%,
+            rgba(240, 240, 245, 0.75) 100%
+          );
+          background-size: 400% 400%;
+          animation: gradientShift 20s ease infinite;
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+          box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.06),
+            0 1px 4px rgba(0, 0, 0, 0.04),
+            inset 0 1px 1px rgba(255, 255, 255, 0.4);
+          position: relative;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .premium-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.15) 50%,
+            transparent 100%
+          );
+          background-size: 200% 100%;
+          animation: cardShimmer 10s ease-in-out infinite;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.4s ease;
+        }
+
+        .premium-card:hover {
+          transform: translateY(-3px) scale(1.01);
+          box-shadow: 
+            0 8px 24px rgba(0, 0, 0, 0.08),
+            0 2px 8px rgba(0, 0, 0, 0.06),
+            inset 0 1px 2px rgba(255, 255, 255, 0.5);
+          border-color: rgba(255, 255, 255, 0.35);
+          background: linear-gradient(
+            135deg,
+            rgba(245, 245, 250, 0.8) 0%,
+            rgba(240, 242, 248, 0.78) 50%,
+            rgba(245, 245, 250, 0.8) 100%
+          );
+        }
+
+        .premium-card:hover::before {
+          opacity: 0.6;
+        }
+
+        .premium-card:active {
+          transform: translateY(-1px) scale(1.0);
+        }
+
+        .card-metallic-accent {
+          background: linear-gradient(
+            135deg,
+            rgba(200, 205, 215, 0.2) 0%,
+            rgba(210, 215, 225, 0.15) 50%,
+            rgba(220, 225, 235, 0.2) 100%
+          );
+          border-top: 1px solid rgba(255, 255, 255, 0.3);
+          border-bottom: 1px solid rgba(150, 160, 175, 0.15);
+        }
+
+        .premium-card-haya {
+          background: linear-gradient(
+            135deg,
+            rgba(10, 138, 99, 0.15) 0%,
+            rgba(0, 107, 74, 0.12) 25%,
+            rgba(0, 62, 43, 0.15) 50%,
+            rgba(0, 107, 74, 0.12) 75%,
+            rgba(10, 138, 99, 0.15) 100%
+          );
+        }
+
+        .premium-card-haya:hover {
+          background: linear-gradient(
+            135deg,
+            rgba(10, 138, 99, 0.22) 0%,
+            rgba(0, 107, 74, 0.18) 50%,
+            rgba(10, 138, 99, 0.22) 100%
+          );
+        }
+
+        .premium-card-thor {
+          background: linear-gradient(
+            135deg,
+            rgba(255, 108, 0, 0.15) 0%,
+            rgba(0, 60, 120, 0.12) 50%,
+            rgba(255, 108, 0, 0.15) 100%
+          );
+        }
+
+        .premium-card-thor:hover {
+          background: linear-gradient(
+            135deg,
+            rgba(255, 108, 0, 0.22) 0%,
+            rgba(0, 60, 120, 0.18) 50%,
+            rgba(255, 108, 0, 0.22) 100%
+          );
+        }
+      `}</style>
+      
+      <div className={`min-h-screen p-8 space-y-8 ${carTheme === "HAYA" ? "animated-gradient-bg-haya" : carTheme === "THOR" ? "animated-gradient-bg-thor" : "animated-gradient-bg"}`}>
+        <div className="flex justify-between items-center bg-white/80 backdrop-blur-xl p-6 rounded-2xl border-2 border-blue-200 shadow-2xl" style={{
+          boxShadow: "0 0 50px rgba(59, 130, 246, 0.2), 0 20px 40px rgba(0, 0, 0, 0.1)"
+        }}>
+          <div>
+            <div className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
+              {welcome}
+            </div>
+            <div className="text-sm font-semibold text-slate-600 mt-2 uppercase tracking-wider">
+              {carTheme} {role ? `• ${role.toUpperCase()}` : ""}
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="mono text-lg">{clock.toLocaleTimeString()}</div>
-          <input
-            value={date1}
-            onChange={(e) => setDate1(e.target.value)}
-            type="date"
-            className="p-2 rounded bg-black/20 text-white"
-          />
-
-          {/* ---- MODIFIED ---- */}
-          {showCompare && (
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="mono text-2xl font-bold text-blue-600 bg-white px-6 py-3 rounded-xl border-2 border-blue-200 shadow-lg">
+              {clock.toLocaleTimeString()}
+            </div>
             <input
-              value={date2}
-              onChange={(e) => setDate2(e.target.value)}
+              value={date1}
+              onChange={(e) => setDate1(e.target.value)}
               type="date"
-              className="p-2 rounded bg-black/20 text-white"
-              placeholder="Compare Date"
+              className="p-3 rounded-xl bg-white text-slate-700 font-semibold border-2 border-blue-200 shadow-lg hover:border-blue-400 transition-all focus:outline-none focus:ring-4 focus:ring-blue-300"
             />
-          )}
 
-          <button
-            onClick={fetchDay}
-            disabled={loading}
-            className="px-4 py-2 rounded text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: theme.accent }}
-          >
-            {loading && !compareData ? "Loading..." : "Fetch"}
-          </button>
+            {showCompare && (
+              <input
+                value={date2}
+                onChange={(e) => setDate2(e.target.value)}
+                type="date"
+                className="p-3 rounded-xl bg-white text-slate-700 font-semibold border-2 border-purple-200 shadow-lg hover:border-purple-400 transition-all focus:outline-none focus:ring-4 focus:ring-purple-300"
+                placeholder="Compare Date"
+              />
+            )}
 
-          {/* ---- MODIFIED ---- */}
-          {showCompare && (
             <button
-              onClick={compareDates}
-              disabled={loading || !date2}
-              className="px-4 py-2 bg-indigo-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700"
+              onClick={fetchDay}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl text-white font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+              style={{ 
+                background: `linear-gradient(135deg, ${theme.accent}, ${carTheme === "HAYA" ? "#ff6b00" : "#06b6d4"})`,
+                boxShadow: `0 0 30px ${theme.accent}40`
+              }}
             >
-              Compare
+              {loading && !compareData ? "Loading..." : "Fetch"}
             </button>
-          )}
 
-          <button
-            onClick={exportPDF}
-            disabled={loading || rows.length === 0}
-            className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700"
-          >
-            Export Report
-          </button>
+            {showCompare && (
+              <button
+                onClick={compareDates}
+                disabled={loading || !date2}
+                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold uppercase tracking-wider rounded-xl disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+                style={{
+                  boxShadow: "0 0 30px rgba(99, 102, 241, 0.4)"
+                }}
+              >
+                Compare
+              </button>
+            )}
 
-          {/* ---- MODIFIED ---- */}
-          {showCompare && (
             <button
-              onClick={exportComparisonPDF}
-              disabled={loading || !date2 || !compareData}
-              className="px-4 py-2 bg-purple-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700"
+              onClick={exportPDF}
+              disabled={loading || rows.length === 0}
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold uppercase tracking-wider rounded-xl disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+              style={{
+                boxShadow: "0 0 30px rgba(16, 185, 129, 0.4)"
+              }}
             >
-              Export Compare
+              Export Report
             </button>
-          )}
 
+            {showCompare && (
+              <button
+                onClick={exportComparisonPDF}
+                disabled={loading || !date2 || !compareData}
+                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold uppercase tracking-wider rounded-xl disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+                style={{
+                  boxShadow: "0 0 30px rgba(168, 85, 247, 0.4)"
+                }}
+              >
+                Export Compare
+              </button>
+            )}
+
+            <button
+              onClick={async () => {
+                await api.logout();
+                window.location.href = "/";
+              }}
+              className="px-6 py-3 bg-gradient-to-r from-slate-600 to-slate-700 text-white font-bold uppercase tracking-wider rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-4">
           <button
-            onClick={async () => {
-              await api.logout();
-              window.location.href = "/";
+            onClick={() => setShowCompare(!showCompare)}
+            className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 uppercase tracking-wider"
+            style={{
+              boxShadow: "0 0 25px rgba(99, 102, 241, 0.3)"
             }}
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600"
           >
-            Logout
+            {showCompare ? "Hide" : "Show"} Comparison 📊
+          </button>
+          <button
+            onClick={() => setShowAdvancedFeatures(!showAdvancedFeatures)}
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 uppercase tracking-wider"
+            style={{
+              boxShadow: "0 0 25px rgba(6, 182, 212, 0.3)"
+            }}
+          >
+            {showAdvancedFeatures ? "Hide" : "Show"} Advanced Analytics 🚀
           </button>
         </div>
-      </div>
 
-      {/* ---- MODIFIED ---- */}
-      <div className="flex justify-end gap-4">
-        <button
-          onClick={() => setShowCompare(!showCompare)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm"
-        >
-          {showCompare ? "Hide" : "Show"} Comparison 📊
-        </button>
-        <button
-          onClick={() => setShowAdvancedFeatures(!showAdvancedFeatures)}
-          className="px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 text-sm"
-        >
-          {showAdvancedFeatures ? "Hide" : "Show"} Advanced Analytics 🚀
-        </button>
-      </div>
-
-      {/* DRIVER VIEW */}
-      {(isDriver || isAdmin) && (
-        <>
-          {/* Driver primary metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
-            <DataCard as={Link} to={toMetricLink("avgSpeed")}>
-              <div className="metric-title">Average Speed</div>
-              <AnimatedValue
-                value={baseTotals.avgSpeed}
-                color={theme.accent}
-              />
-              <div className="text-xs mt-2">MPH</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("lapTime")}>
-              <div className="metric-title">Avg Lap Time</div>
-              <AnimatedValue
-                value={formatLap(baseTotals.avgLapTime)}
-                color={theme.accent}
-              />
-              <div className="text-xs mt-2">m:ss</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("maxSpeed")}>
-              <div className="metric-title">Max Speed (avg)</div>
-              <AnimatedValue
-                value={driverAgg.maxSpeed || 0}
-                color="#22c55e"
-              />
-              <div className="text-xs mt-2">MPH</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("deltaToBestLap")}>
-              <div className="metric-title">Δ to Best Lap</div>
-              <AnimatedValue
-                value={driverAgg.deltaToBestLap || 0}
-                color="#38bdf8"
-              />
-              <div className="text-xs mt-2">sec</div>
-            </DataCard>
-          </div>
-
-          {/* Driver control inputs & style */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-4">
-            <DataCard as={Link} to={toMetricLink("avgThrottle")}>
-              <div className="metric-title">Avg Throttle</div>
-              <AnimatedValue
-                value={driverAgg.avgThrottle || 0}
-                color="#22c55e"
-              />
-              <div className="text-xs mt-2">%</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("avgBrakePressure")}>
-              <div className="metric-title">Avg Brake</div>
-              <AnimatedValue
-                value={driverAgg.avgBrakePressure || 0}
-                color="#ef4444"
-              />
-              <div className="text-xs mt-2">%</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("hardBrakeEvents")}>
-              <div className="metric-title">Hard Brakes</div>
-              <AnimatedValue
-                value={driverAgg.hardBrakeEvents || 0}
-                color="#f97316"
-              />
-              <div className="text-xs mt-2">events</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("steeringWork")}>
-              <div className="metric-title">Steering Work</div>
-              <AnimatedValue
-                value={driverAgg.steeringWork || 0}
-                color="#a855f7"
-              />
-              <div className="text-xs mt-2">rel</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("gearShifts")}>
-              <div className="metric-title">Gear Shifts</div>
-              <AnimatedValue
-                value={driverAgg.gearShifts || 0}
-                color="#eab308"
-              />
-              <div className="text-xs mt-2">per lap</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("coastTime")}>
-              <div className="metric-title">Coast Time</div>
-              <AnimatedValue
-                value={driverAgg.coastTime || 0}
-                color="#0ea5e9"
-              />
-              <div className="text-xs mt-2">sec</div>
-            </DataCard>
-          </div>
-        </>
-      )}
-
-      {/* ENGINEER VIEW */}
-      {(isEngineer || isAdmin) && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-            <DataCard as={Link} to={toMetricLink("avgSpeed")}>
-              <div className="metric-title">Avg Speed</div>
-              <AnimatedValue
-                value={engineerAgg.avgSpeed}
-                color={theme.accent}
-              />
-              <div className="text-xs mt-2">MPH</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("avgRpm")}>
-              <div className="metric-title">Avg RPM</div>
-              <AnimatedValue
-                value={engineerAgg.avgRpm}
-                color={theme.accent}
-              />
-              <div className="text-xs mt-2">RPM</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("avgTemp")}>
-              <div className="metric-title">Avg Temp</div>
-              <AnimatedValue
-                value={engineerAgg.avgTemp}
-                color={theme.accent}
-              />
-              <div className="text-xs mt-2">°F</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("avgFuel")}>
-              <div className="metric-title">Avg Fuel Level</div>
-              <AnimatedValue
-                value={engineerAgg.avgFuel}
-                color={theme.accent}
-              />
-              <div className="text-xs mt-2">%</div>
-            </DataCard>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-4">
-            <DataCard as={Link} to={toMetricLink("coolantTemp")}>
-              <div className="metric-title">Coolant Temp</div>
-              <AnimatedValue
-                value={engineerAgg.coolantTemp || 0}
-                color="#38bdf8"
-              />
-              <div className="text-xs mt-2">°C</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("oilTemp")}>
-              <div className="metric-title">Oil Temp</div>
-              <AnimatedValue
-                value={engineerAgg.oilTemp || 0}
-                color="#f97316"
-              />
-              <div className="text-xs mt-2">°C</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("batteryVoltageMin")}>
-              <div className="metric-title">Min Battery V</div>
-              <AnimatedValue
-                value={engineerAgg.batteryVoltageMin || 0}
-                color="#facc15"
-              />
-              <div className="text-xs mt-2">V</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("fuelUsedLap")}>
-              <div className="metric-title">Fuel Used / Lap</div>
-              <AnimatedValue
-                value={engineerAgg.fuelUsedLap || 0}
-                color="#22c55e"
-              />
-              <div className="text-xs mt-2">L</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("maxLatG")}>
-              <div className="metric-title">Max Lateral G</div>
-              <AnimatedValue
-                value={engineerAgg.maxLatG || 0}
-                color="#a855f7"
-              />
-              <div className="text-xs mt-2">g</div>
-            </DataCard>
-
-            <DataCard as={Link} to={toMetricLink("maxLongG")}>
-              <div className="metric-title">Max Longitudinal G</div>
-              <AnimatedValue
-                value={engineerAgg.maxLongG || 0}
-                color="#e11d48"
-              />
-              <div className="text-xs mt-2">g</div>
-            </DataCard>
-          </div>
-        </>
-      )}
-
-      {/* ✅ NEW COMPARE DATA BLOCK - REPLACES OLD ONE */}
-      {/* ---- MODIFIED ---- */}
-      {showCompare && compareData && (
-        <CompareDataBlock 
-          compareData={compareData} 
-          date1={date1} 
-          date2={date2} 
-          role={role} 
-        />
-      )}
-
-      {showAdvancedFeatures && rows.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            <AIInsights date={date1} car={carTheme} />
-            <GamificationWidget date={date1} car={carTheme} />
-          </div>
-          <VisualizationPlayground data={rows} />
-        </motion.div>
-      )}
-
-      <div className="panel p-4 mt-6">
-        <div className="text-sm text-gray-300 mb-3 flex justify-between items-center">
-          <span>{msg}</span>
-          {rows.length > 0 && (
-            <span className="text-xs bg-indigo-600 px-2 py-1 rounded">
-              {rows.length} records
-            </span>
-          )}
-        </div>
-
-        {rows.length === 0 ? (
-          <div className="text-gray-400 text-center py-8">
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                <span>Loading…</span>
-              </div>
-            ) : (
-              <div>
-                <div className="text-lg mb-2">📊 No data to display</div>
-                <div className="text-sm opacity-70">
-                  Select a date and click "Fetch" to load telemetry data
+        {/* DRIVER VIEW */}
+        {(isDriver || isAdmin) && (
+          <>
+            {/* Driver primary metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("avgSpeed"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Average Speed</div>
                 </div>
+                <AnimatedValue
+                  value={baseTotals.avgSpeed}
+                  color={theme.accent}
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">MPH</div>
               </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("lapTime"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Avg Lap Time</div>
+                </div>
+                <AnimatedValue
+                  value={formatLap(baseTotals.avgLapTime)}
+                  color={theme.accent}
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">m:ss</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("maxSpeed"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Max Speed (avg)</div>
+                </div>
+                <AnimatedValue
+                  value={driverAgg.maxSpeed || 0}
+                  color="#10b981"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">MPH</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("deltaToBestLap"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Δ to Best Lap</div>
+                </div>
+                <AnimatedValue
+                  value={driverAgg.deltaToBestLap || 0}
+                  color="#06b6d4"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">sec</div>
+              </div>
+            </div>
+
+            {/* Driver control inputs & style */}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-6">
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("avgThrottle"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Avg Throttle</div>
+                </div>
+                <AnimatedValue
+                  value={driverAgg.avgThrottle || 0}
+                  color="#10b981"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">%</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("avgBrakePressure"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Avg Brake</div>
+                </div>
+                <AnimatedValue
+                  value={driverAgg.avgBrakePressure || 0}
+                  color="#ef4444"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">%</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("hardBrakeEvents"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Hard Brakes</div>
+                </div>
+                <AnimatedValue
+                  value={driverAgg.hardBrakeEvents || 0}
+                  color="#f97316"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">events</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("steeringWork"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Steering Work</div>
+                </div>
+                <AnimatedValue
+                  value={driverAgg.steeringWork || 0}
+                  color="#a855f7"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">rel</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("gearShifts"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Gear Shifts</div>
+                </div>
+                <AnimatedValue
+                  value={driverAgg.gearShifts || 0}
+                  color="#eab308"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">per lap</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("coastTime"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Coast Time</div>
+                </div>
+                <AnimatedValue
+                  value={driverAgg.coastTime || 0}
+                  color="#0ea5e9"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">sec</div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ENGINEER VIEW */}
+        {(isEngineer || isAdmin) && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("avgSpeed"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Avg Speed</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.avgSpeed}
+                  color={theme.accent}
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">MPH</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("avgRpm"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Avg RPM</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.avgRpm}
+                  color={theme.accent}
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">RPM</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("avgTemp"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Avg Temp</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.avgTemp}
+                  color={theme.accent}
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">°F</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("avgFuel"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Avg Fuel Level</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.avgFuel}
+                  color={theme.accent}
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">%</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-6">
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("coolantTemp"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Coolant Temp</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.coolantTemp || 0}
+                  color="#06b6d4"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">°C</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("oilTemp"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Oil Temp</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.oilTemp || 0}
+                  color="#f97316"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">°C</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("batteryVoltageMin"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Min Battery V</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.batteryVoltageMin || 0}
+                  color="#eab308"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">V</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("fuelUsedLap"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Fuel Used / Lap</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.fuelUsedLap || 0}
+                  color="#10b981"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">L</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("maxLatG"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Max Lateral G</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.maxLatG || 0}
+                  color="#a855f7"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">g</div>
+              </div>
+
+              <div className={`premium-card ${carTheme === "HAYA" ? "premium-card-haya" : carTheme === "THOR" ? "premium-card-thor" : ""} rounded-3xl p-6 cursor-pointer`} onClick={() => nav(toMetricLink("maxLongG"))}>
+                <div className="card-metallic-accent rounded-lg px-3 py-1 inline-block mb-3">
+                  <div className="metric-title text-slate-700 font-bold uppercase tracking-wider text-xs">Max Longitudinal G</div>
+                </div>
+                <AnimatedValue
+                  value={engineerAgg.maxLongG || 0}
+                  color="#e11d48"
+                />
+                <div className="text-xs mt-3 font-semibold text-slate-600 opacity-80">g</div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {showCompare && compareData && (
+          <CompareDataBlock 
+            compareData={compareData} 
+            date1={date1} 
+            date2={date2} 
+            role={role} 
+          />
+        )}
+
+        {showAdvancedFeatures && rows.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <AIInsights date={date1} car={carTheme} />
+              <GamificationWidget date={date1} car={carTheme} />
+            </div>
+            <VisualizationPlayground data={rows} />
+          </motion.div>
+        )}
+
+        <div className="bg-white/80 backdrop-blur-xl p-6 mt-8 rounded-2xl border-2 border-blue-200 shadow-2xl" style={{
+          boxShadow: "0 0 40px rgba(59, 130, 246, 0.2), 0 20px 40px rgba(0, 0, 0, 0.08)"
+        }}>
+          <div className="text-sm font-semibold text-slate-700 mb-4 flex justify-between items-center">
+            <span>{msg}</span>
+            {rows.length > 0 && (
+              <span className="text-xs bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-lg font-bold uppercase tracking-wider shadow-lg">
+                {rows.length} records
+              </span>
             )}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="text-indigo-300 border-b border-indigo-500/30">
-                  <th className="p-2">Time</th>
-                  <th className="p-2">Speed</th>
-                  <th className="p-2">RPM</th>
-                  <th className="p-2">Lap Time</th>
 
-                  {/* Driver table columns */}
-                  {(isDriver || isAdmin) && (
-                    <>
-                      <th className="p-2">Throttle (%)</th>
-                      <th className="p-2">Brake (%)</th>
-                      <th className="p-2">Gear Shifts</th>
-                    </>
-                  )}
-
-                  {/* Engineer table columns */}
-                  {(isEngineer || isAdmin) && (
-                    <>
-                      <th className="p-2">Coolant Temp</th>
-                      <th className="p-2">Oil Temp</th>
-                      <th className="p-2">Fuel Level</th>
-                      <th className="p-2">Battery V (min)</th>
-                      <th className="p-2">Lat G</th>
-                      <th className="p-2">Long G</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, idx) => (
-                  <motion.tr
-                    key={r._id || `row-${idx}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: idx * 0.02 }}
-                    className="border-t border-white/10 hover:bg-[#071827] transition-colors"
-                  >
-                    <td className="p-2 mono text-gray-300">
-                      {new Date(r.timestamp).toLocaleTimeString()}
-                    </td>
-                    <td className="p-2 mono font-semibold">
-                      {r.speed ?? 0}
-                    </td>
-                    <td className="p-2 mono font-semibold">{r.rpm ?? 0}</td>
-                    <td className="p-2 mono">{r.lapTime || "N/A"}</td>
+          {rows.length === 0 ? (
+            <div className="text-slate-600 text-center py-12">
+              {loading ? (
+                <div className="flex items-center justify-center gap-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                  <span className="font-semibold text-lg">Loading…</span>
+                </div>
+              ) : (
+                <div>
+                  <div className="text-2xl mb-3 font-bold text-slate-700">📊 No data to display</div>
+                  <div className="text-sm text-slate-500 font-medium">
+                    Select a date and click "Fetch" to load telemetry data
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border-2 border-blue-100">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-b-2 border-blue-400">
+                    <th className="p-4 font-bold uppercase tracking-wider">Time</th>
+                    <th className="p-4 font-bold uppercase tracking-wider">Speed</th>
+                    <th className="p-4 font-bold uppercase tracking-wider">RPM</th>
+                    <th className="p-4 font-bold uppercase tracking-wider">Lap Time</th>
 
                     {(isDriver || isAdmin) && (
                       <>
-                        <td className="p-2 mono">
-                          {r.avgThrottle ?? "-"}
-                        </td>
-                        <td className="p-2 mono">
-                          {r.avgBrakePressure ?? "-"}
-                        </td>
-                        <td className="p-2 mono">
-                          {r.gearShifts ?? "-"}
-                        </td>
+                        <th className="p-4 font-bold uppercase tracking-wider">Throttle (%)</th>
+                        <th className="p-4 font-bold uppercase tracking-wider">Brake (%)</th>
+                        <th className="p-4 font-bold uppercase tracking-wider">Gear Shifts</th>
                       </>
                     )}
 
                     {(isEngineer || isAdmin) && (
                       <>
-                        <td className="p-2 mono">
-                          {r.coolantTemp ?? r.temperature ?? "-"}
-                        </td>
-                        <td className="p-2 mono">
-                          {r.oilTemp ?? "-"}
-                        </td>
-                        <td className="p-2 mono">
-                          {r.fuelLevel ?? "-"}
-                        </td>
-                        <td className="p-2 mono">
-                          {r.batteryVoltageMin ?? "-"}
-                        </td>
-                        <td className="p-2 mono">
-                          {r.maxLatG ?? "-"}
-                        </td>
-                        <td className="p-2 mono">
-                          {r.maxLongG ?? "-"}
-                        </td>
+                        <th className="p-4 font-bold uppercase tracking-wider">Coolant Temp</th>
+                        <th className="p-4 font-bold uppercase tracking-wider">Oil Temp</th>
+                        <th className="p-4 font-bold uppercase tracking-wider">Fuel Level</th>
+                        <th className="p-4 font-bold uppercase tracking-wider">Battery V (min)</th>
+                        <th className="p-4 font-bold uppercase tracking-wider">Lat G</th>
+                        <th className="p-4 font-bold uppercase tracking-wider">Long G</th>
                       </>
                     )}
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, idx) => (
+                    <motion.tr
+                      key={r._id || `row-${idx}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.02 }}
+                      className="border-t border-blue-100 hover:bg-blue-50/50 transition-colors"
+                      style={{
+                        backgroundColor: idx % 2 === 0 ? "rgba(255, 255, 255, 0.5)" : "rgba(241, 245, 249, 0.5)"
+                      }}
+                    >
+                      <td className="p-4 mono text-slate-600 font-medium">
+                        {new Date(r.timestamp).toLocaleTimeString()}
+                      </td>
+                      <td className="p-4 mono font-bold text-blue-600">
+                        {r.speed ?? 0}
+                      </td>
+                      <td className="p-4 mono font-bold text-cyan-600">{r.rpm ?? 0}</td>
+                      <td className="p-4 mono font-semibold text-slate-700">{r.lapTime || "N/A"}</td>
+
+                      {(isDriver || isAdmin) && (
+                        <>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.avgThrottle ?? "-"}
+                          </td>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.avgBrakePressure ?? "-"}
+                          </td>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.gearShifts ?? "-"}
+                          </td>
+                        </>
+                      )}
+
+                      {(isEngineer || isAdmin) && (
+                        <>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.coolantTemp ?? r.temperature ?? "-"}
+                          </td>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.oilTemp ?? "-"}
+                          </td>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.fuelLevel ?? "-"}
+                          </td>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.batteryVoltageMin ?? "-"}
+                          </td>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.maxLatG ?? "-"}
+                          </td>
+                          <td className="p-4 mono font-semibold text-slate-700">
+                            {r.maxLongG ?? "-"}
+                          </td>
+                        </>
+                      )}
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
